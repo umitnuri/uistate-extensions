@@ -4,6 +4,7 @@
 # Motivation
 My colleague astutely observed that effectively utilising state extensions requires a streamlined enforcement mechanism. Recognizing the validity of this point, I developed this library to simplify the process for other developers. By minimizing boilerplate code, this library aims to enhance developer productivity and reduce the potential for errors.
 # Getting Started
+Here is the blog post where I discuss the pattern [umit.aydin.biz](https://umit.aydin.biz/yet-another-pattern-to-handle-ui-state-in-jetpack-compose)
 This library exclusively supports sealed classes and interfaces. To incorporate the library into your project, follow these steps to include the necessary project dependencies.
 ```
 plugin{
