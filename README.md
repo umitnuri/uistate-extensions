@@ -1,6 +1,6 @@
 [![PR Check](https://github.com/umitnuri/uistate-extensions/actions/workflows/pr-check.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/pr-check.yml)
-[![Main Check](https://github.com/umitnuri/uistate-extensions/actions/workflows/build.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/build.yml)
-[![GitHub Packages & Maven Central](https://github.com/umitnuri/uistate-extensions/actions/workflows/release.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/release.yml)
+[![Build Test](https://github.com/umitnuri/uistate-extensions/actions/workflows/build.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/build.yml)
+[![Publish package to GitHub Packages & Maven Central](https://github.com/umitnuri/uistate-extensions/actions/workflows/release.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/release.yml)
 # Motivation
 My colleague astutely observed that effectively utilising state extensions requires a streamlined enforcement mechanism. Recognizing the validity of this point, I developed this library to simplify the process for other developers. By minimizing boilerplate code, this library aims to enhance developer productivity and reduce the potential for errors.
 # Getting Started
