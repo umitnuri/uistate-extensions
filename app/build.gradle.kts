@@ -9,12 +9,11 @@ plugins {
 
 android {
     namespace = "biz.aydin.uistate"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "biz.aydin.uistate"
         minSdk = 30
-        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -31,15 +30,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
     }
     kotlin {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
     }
 }
