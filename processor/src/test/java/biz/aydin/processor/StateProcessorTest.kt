@@ -373,7 +373,7 @@ class StateProcessorTest {
 
         val compilation = KotlinCompilation().apply {
             sources = listOf(kotlinSource)
-            configureKsp(useKsp2 = true) {
+            configureKsp {
                 symbolProcessorProviders += StateProcessorProvider()
             }
             inheritClassPath = true
