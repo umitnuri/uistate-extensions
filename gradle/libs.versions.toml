@@ -11,7 +11,7 @@ activityCompose = "1.12.0"
 composeBom = "2025.12.01"
 jetbrainsKotlinJvm = "2.2.21"
 kspVersion = "2.3.4"
-mavenPublish = "0.34.0"
+mavenPublish = "0.36.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
