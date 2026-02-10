@@ -54,11 +54,16 @@ class StateProcessor(
             val className = classDeclaration.qualifiedName!!.asString()
 
             file += generateInvokeFunction(className)
-            classDeclaration.getSealedSubclasses().forEach {
+            findAllSealedSubclasses(classDeclaration).forEach {
                 file += generateCamelCasedConvenienceFunctionForSubclass(it, className)
             }
             file.close()
             super.visitClassDeclaration(classDeclaration, data)
+        }
+
+        private fun findAllSealedSubclasses(clazz: KSClassDeclaration): Sequence<KSClassDeclaration> {
+            val subclasses = clazz.getSealedSubclasses()
+            return subclasses + subclasses.flatMap { findAllSealedSubclasses(it) }
         }
 
         private fun generateCamelCasedConvenienceFunctionForSubclass(
@@ -66,11 +71,11 @@ class StateProcessor(
             className: String
         ): String {
             val functionName = getCamelCasedFunctionName(it)
-            val sealedObjectName = it.simpleName.getShortName()
+            val sealedObjectQualifiedName = it.qualifiedName?.asString() ?: return ""
             val function = buildString {
                 appendLine()
-                appendLine("inline fun $className.$functionName(body: $className.$sealedObjectName.() -> Unit): $className {")
-                appendLine("\tif (this is $className.$sealedObjectName) body()")
+                appendLine("inline fun $className.$functionName(body: $sealedObjectQualifiedName.() -> Unit): $className {")
+                appendLine("\tif (this is $sealedObjectQualifiedName) body()")
                 appendLine("\treturn this")
                 appendLine("}")
             }

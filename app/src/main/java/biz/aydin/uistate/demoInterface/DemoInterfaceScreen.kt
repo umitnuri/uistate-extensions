@@ -1,4 +1,4 @@
-package biz.aydin.uistate.demoScreen
+package biz.aydin.uistate.demoInterface
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,40 +14,40 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.deeplyNested
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.error
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.invoke
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.loaded
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.loading
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.nested
+import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.deeplyNested
+import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.error
+import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.invoke
+import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.loaded
+import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.loading
+import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.nested
 
 @Composable
-fun DemoScreen(
-    viewModel: DemoViewModel
+fun DemoInterfaceScreen(
+    viewModel: DemoInterfaceViewModel
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    state{
+    state {
         error {
-            DemoScreenError(error = error)
+            DemoInterfaceScreenError(error = error)
         }
         loaded {
-            DemoScreenLoaded(data = data)
+            DemoInterfaceScreenLoaded(data = data)
         }
         loading {
-            DemoScreenLoading()
+            DemoInterfaceScreenLoading()
         }
         nested {
-            DemoScreenNested()
+            DemoInterfaceScreenNested()
         }
 
         deeplyNested {
-            DemoScreenDeeplyNested()
+            DemoInterfaceScreenDeeplyNested()
         }
     }
 }
 
 @Composable
-fun DemoScreenLoading() {
+fun DemoInterfaceScreenLoading() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,12 +55,12 @@ fun DemoScreenLoading() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Loading...", fontSize = 48.sp)
+        Text(text = "Interface Loading...", fontSize = 48.sp)
     }
 }
 
 @Composable
-fun DemoScreenLoaded(
+fun DemoInterfaceScreenLoaded(
     data: String
 ) {
     Column(
@@ -70,13 +70,13 @@ fun DemoScreenLoaded(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Loaded...", fontSize = 48.sp)
+        Text(text = "Interface Loaded...", fontSize = 48.sp)
         Text(text = data, fontSize = 24.sp, textAlign = TextAlign.Justify)
     }
 }
 
 @Composable
-fun DemoScreenError(
+fun DemoInterfaceScreenError(
     error: String
 ) {
     Column(
@@ -86,13 +86,13 @@ fun DemoScreenError(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Error...", fontSize = 48.sp)
+        Text(text = "Interface Error...", fontSize = 48.sp)
         Text(text = error, fontSize = 24.sp)
     }
 }
 
 @Composable
-fun DemoScreenNested() {
+fun DemoInterfaceScreenNested() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,13 +100,13 @@ fun DemoScreenNested() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Nested...", fontSize = 48.sp)
+        Text(text = "Interface Nested...", fontSize = 48.sp)
         Text(text = "Generic Nested State", fontSize = 24.sp)
     }
 }
 
 @Composable
-fun DemoScreenDeeplyNested() {
+fun DemoInterfaceScreenDeeplyNested() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -114,36 +114,37 @@ fun DemoScreenDeeplyNested() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Deeply Nested...", fontSize = 48.sp)
+        Text(text = "Interface Deeply Nested...", fontSize = 48.sp)
     }
 }
 
 @Preview
 @Composable
-private fun DemoScreenLoadingPreview() {
-    DemoScreenLoading()
+private fun DemoInterfaceScreenLoadingPreview() {
+    DemoInterfaceScreenLoading()
 }
 
 @Preview
 @Composable
-private fun DemoScreenLoadedPreview() {
-    DemoScreenLoaded(data = "Data")
+private fun DemoInterfaceScreenLoadedPreview() {
+    DemoInterfaceScreenLoaded(data = "Data")
 }
 
 @Preview
 @Composable
-private fun DemoScreenErrorPreview() {
-    DemoScreenError(error = "Error")
+private fun DemoInterfaceScreenErrorPreview() {
+    DemoInterfaceScreenError(error = "Error")
 }
 
 @Preview
 @Composable
-private fun DemoScreenNestedPreview() {
-    DemoScreenNested()
+private fun DemoInterfaceScreenNestedPreview() {
+    DemoInterfaceScreenNested()
 }
 
 @Preview
 @Composable
-private fun DemoScreenDeeplyNestedPreview() {
-    DemoScreenDeeplyNested()
+private fun DemoInterfaceScreenDeeplyNestedPreview() {
+    DemoInterfaceScreenDeeplyNested()
 }
+

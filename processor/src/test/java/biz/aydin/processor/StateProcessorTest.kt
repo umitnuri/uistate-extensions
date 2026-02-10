@@ -362,6 +362,44 @@ class StateProcessorTest {
         assertTrue(result.second!!.contains(expectedGeneratedFunction))
     }
 
+    @Test
+    fun `Given nested sealed class hierarchy, when compiling, then it generates extensions for all nested subclasses`() {
+        val result = compileTestFile(
+            fileName = "NestedState",
+            content = """
+                $imports
+                @UIState
+                sealed class NestedState {
+                    sealed class Level1 : NestedState() {
+                        data object Level2 : Level1()
+                    }
+                }
+            """.trimIndent()
+        )
+        // Check comparison result code
+        assertEquals(KotlinCompilation.ExitCode.OK, result.first.exitCode)
+
+        // Check for Level1 extension
+        val expectedLevel1 = """
+            inline fun biz.aydin.annotation.test.NestedState.level1(body: biz.aydin.annotation.test.NestedState.Level1.() -> Unit): biz.aydin.annotation.test.NestedState {
+            	if (this is biz.aydin.annotation.test.NestedState.Level1) body()
+            	return this
+            }
+        """.trimIndent()
+
+        // Check for Level2 extension
+        val expectedLevel2 = """
+            inline fun biz.aydin.annotation.test.NestedState.level2(body: biz.aydin.annotation.test.NestedState.Level1.Level2.() -> Unit): biz.aydin.annotation.test.NestedState {
+            	if (this is biz.aydin.annotation.test.NestedState.Level1.Level2) body()
+            	return this
+            }
+        """.trimIndent()
+
+        // Ensure both are present
+        assertTrue(result.second!!.contains(expectedLevel1))
+        assertTrue(result.second!!.contains(expectedLevel2))
+    }
+
     private fun compileTestFile(
         fileName: String,
         content: String
