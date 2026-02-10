@@ -1,4 +1,4 @@
-package biz.aydin.uistate.demoScreen
+package biz.aydin.uistate.demoInterface
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,36 +11,37 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-class DemoViewModel : ViewModel(), CoroutineScope {
+class DemoInterfaceViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = viewModelScope.coroutineContext
 
-    private val mutableState: MutableStateFlow<DemoScreenState> =
-        MutableStateFlow(DemoScreenState.Loading)
+    private val mutableState: MutableStateFlow<DemoInterfaceState> =
+        MutableStateFlow(DemoInterfaceState.Loading)
 
-    val state: StateFlow<DemoScreenState> = mutableState
+    val state: StateFlow<DemoInterfaceState> = mutableState
         .stateIn(
             scope = this,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = DemoScreenState.Loading
+            initialValue = DemoInterfaceState.Loading
         )
 
     init {
         launch {
             while (true) {
                 delay(1000)
-                mutableState.value = DemoScreenState.Loaded("We've received important information")
+                mutableState.value = DemoInterfaceState.Loaded("Interface: We've received important information")
                 delay(1000)
-                mutableState.value = DemoScreenState.Loading
+                mutableState.value = DemoInterfaceState.Loading
                 delay(1000)
-                mutableState.value = DemoScreenState.Error(error = "This is very serious error!")
+                mutableState.value = DemoInterfaceState.Error(error = "Interface: This is very serious error!")
                 delay(1000)
-                mutableState.value = DemoScreenState.Loading
+                mutableState.value = DemoInterfaceState.Loading
                 delay(1000)
-                mutableState.value = DemoScreenState.Nested.DeeplyNested
+                mutableState.value = DemoInterfaceState.Nested.DeeplyNested
                 delay(1000)
-                mutableState.value = DemoScreenState.Loading
+                mutableState.value = DemoInterfaceState.Loading
             }
         }
     }
 }
+

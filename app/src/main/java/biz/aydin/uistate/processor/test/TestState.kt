@@ -7,4 +7,8 @@ sealed class TestState {
     data object Loading : TestState()
     class Error(val error: String) : TestState()
     data class Success(val data: String) : TestState()
+
+    sealed class Nested : TestState() {
+        data object DeeplyNested : Nested()
+    }
 }

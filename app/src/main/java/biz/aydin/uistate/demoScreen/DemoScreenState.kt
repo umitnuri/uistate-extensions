@@ -7,4 +7,8 @@ sealed class DemoScreenState {
     data object Loading : DemoScreenState()
     data class Loaded(val data: String) : DemoScreenState()
     class Error(val error: String) : DemoScreenState()
+
+    sealed class Nested : DemoScreenState() {
+        data object DeeplyNested : Nested()
+    }
 }
