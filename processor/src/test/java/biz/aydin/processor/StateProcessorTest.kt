@@ -379,7 +379,7 @@ class StateProcessorTest {
         // Check comparison result code
         assertEquals(KotlinCompilation.ExitCode.OK, result.first.exitCode)
 
-        // Check for Level1 extension
+        // Check for Level1 extension - uses NestedState as receiver (direct child)
         val expectedLevel1 = """
             inline fun biz.aydin.annotation.test.NestedState.level1(body: biz.aydin.annotation.test.NestedState.Level1.() -> Unit): biz.aydin.annotation.test.NestedState {
             	if (this is biz.aydin.annotation.test.NestedState.Level1) body()
@@ -387,9 +387,9 @@ class StateProcessorTest {
             }
         """.trimIndent()
 
-        // Check for Level2 extension
+        // Check for Level2 extension - uses Level1 as receiver (immediate parent)
         val expectedLevel2 = """
-            inline fun biz.aydin.annotation.test.NestedState.level2(body: biz.aydin.annotation.test.NestedState.Level1.Level2.() -> Unit): biz.aydin.annotation.test.NestedState {
+            inline fun biz.aydin.annotation.test.NestedState.Level1.level2(body: biz.aydin.annotation.test.NestedState.Level1.Level2.() -> Unit): biz.aydin.annotation.test.NestedState.Level1 {
             	if (this is biz.aydin.annotation.test.NestedState.Level1.Level2) body()
             	return this
             }

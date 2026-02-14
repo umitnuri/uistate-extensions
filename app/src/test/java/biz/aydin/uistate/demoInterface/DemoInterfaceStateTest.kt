@@ -127,8 +127,10 @@ class DemoInterfaceStateTest {
         var isExecuted = false
         val state: DemoInterfaceState = DemoInterfaceState.Nested.DeeplyNested
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertTrue(isExecuted)
@@ -219,36 +221,42 @@ class DemoInterfaceStateTest {
     }
 
     @Test
-    fun `Given state is Loading, when executing deeplyNested block, then it does not execute`() {
+    fun `Given state is Loading, when executing nested block with deeplyNested inside, then deeplyNested does not execute`() {
         var isExecuted = false
         val state: DemoInterfaceState = DemoInterfaceState.Loading
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertFalse(isExecuted)
     }
 
     @Test
-    fun `Given state is Error, when executing deeplyNested block, then it does not execute`() {
+    fun `Given state is Error, when executing nested block with deeplyNested inside, then deeplyNested does not execute`() {
         var isExecuted = false
         val state: DemoInterfaceState = DemoInterfaceState.Error(error = "ERROR")
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertFalse(isExecuted)
     }
 
     @Test
-    fun `Given state is Loaded, when executing deeplyNested block, then it does not execute`() {
+    fun `Given state is Loaded, when executing nested block with deeplyNested inside, then deeplyNested does not execute`() {
         var isExecuted = false
         val state: DemoInterfaceState = DemoInterfaceState.Loaded(data = "DATA")
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertFalse(isExecuted)
@@ -339,9 +347,9 @@ class DemoInterfaceStateTest {
             }
             nested {
                 nestedExecuted = true
-            }
-            deeplyNested {
-                deeplyNestedExecuted = true
+                deeplyNested {
+                    deeplyNestedExecuted = true
+                }
             }
         }
 
@@ -373,7 +381,7 @@ class DemoInterfaceStateTest {
 
     @Test
     fun `Given state is DeeplyNested, when calling deeplyNested extension, then returns the same state instance`() {
-        val state: DemoInterfaceState = DemoInterfaceState.Nested.DeeplyNested
+        val state: DemoInterfaceState.Nested = DemoInterfaceState.Nested.DeeplyNested
         val result = state.deeplyNested { }
         assertEquals(state, result)
     }

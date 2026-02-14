@@ -37,11 +37,9 @@ fun DemoInterfaceScreen(
             DemoInterfaceScreenLoading()
         }
         nested {
-            DemoInterfaceScreenNested()
-        }
-
-        deeplyNested {
-            DemoInterfaceScreenDeeplyNested()
+            deeplyNested {
+                DemoInterfaceScreenDeeplyNested()
+            }
         }
     }
 }

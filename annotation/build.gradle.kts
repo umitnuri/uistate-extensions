@@ -32,8 +32,11 @@ publishing {
 }
 
 mavenPublishing {
-    publishToMavenCentral()
-    signAllPublications()
+    val isReleaseBuild = System.getenv("RELEASE_SIGNING_ENABLED")?.toBoolean() ?: false
+    if (isReleaseBuild) {
+        publishToMavenCentral()
+        signAllPublications()
+    }
 
     coordinates(
         groupId = "biz.aydin.library.uistate-extension",
