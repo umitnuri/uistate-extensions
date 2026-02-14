@@ -22,6 +22,7 @@ jobs:
 
       - name: Publish Packages
         run: |
+          echo "Signing is ${{ vars.RELEASE_SIGNING_ENABLED }}"
           ./gradlew publish -PVERSION="${{ steps.get_version_from_tag.outputs.version }}"
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
@@ -30,3 +31,4 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_IN_MEMORY_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSPHRASE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_SIGNING_ENABLED: ${{ vars.RELEASE_SIGNING_ENABLED }}
