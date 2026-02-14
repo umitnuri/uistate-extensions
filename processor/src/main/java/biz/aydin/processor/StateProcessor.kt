@@ -11,6 +11,15 @@ import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.validate
 import java.io.OutputStream
 
+/**
+ * Represents a sealed subclass along with its immediate parent.
+ * This is used to generate extensions with the correct receiver type for nested hierarchies.
+ */
+data class SealedSubclassWithParent(
+    val subclass: KSClassDeclaration,
+    val parent: KSClassDeclaration
+)
+
 class StateProcessor(
     private val options: Map<String, String>,
     private val logger: KSPLogger,
@@ -54,16 +63,28 @@ class StateProcessor(
             val className = classDeclaration.qualifiedName!!.asString()
 
             file += generateInvokeFunction(className)
-            findAllSealedSubclasses(classDeclaration).forEach {
-                file += generateCamelCasedConvenienceFunctionForSubclass(it, className)
+            findAllSealedSubclassesWithParents(classDeclaration).forEach { subclassWithParent ->
+                val receiverType = subclassWithParent.parent.qualifiedName!!.asString()
+                file += generateCamelCasedConvenienceFunctionForSubclass(
+                    subclassWithParent.subclass,
+                    receiverType
+                )
             }
             file.close()
             super.visitClassDeclaration(classDeclaration, data)
         }
 
-        private fun findAllSealedSubclasses(clazz: KSClassDeclaration): Sequence<KSClassDeclaration> {
-            val subclasses = clazz.getSealedSubclasses()
-            return subclasses + subclasses.flatMap { findAllSealedSubclasses(it) }
+        private fun findAllSealedSubclassesWithParents(
+            clazz: KSClassDeclaration
+        ): Sequence<SealedSubclassWithParent> {
+            val directSubclasses = clazz.getSealedSubclasses()
+            return directSubclasses.flatMap { subclass ->
+                // Create entry for this direct subclass with current class as parent
+                val entry = sequenceOf(SealedSubclassWithParent(subclass, clazz))
+                // Recursively get nested subclasses, where subclass is their parent
+                val nestedEntries = findAllSealedSubclassesWithParents(subclass)
+                entry + nestedEntries
+            }
         }
 
         private fun generateCamelCasedConvenienceFunctionForSubclass(

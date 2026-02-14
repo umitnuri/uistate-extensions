@@ -59,7 +59,7 @@ inline fun biz.aydin.uistate.demoScreen.DemoScreenState.loading(body: biz.aydin.
 
 ## Nested Sealed Hierarchies
 
-The library also supports nested sealed classes and interfaces. Extensions are generated for all levels of the hierarchy:
+The library supports nested sealed classes and interfaces. Extensions are generated for all levels of the hierarchy, with each extension using its **immediate parent** as the receiver type:
 
 ```kotlin
 @UIState
@@ -74,7 +74,25 @@ sealed class DemoScreenState {
 }
 ```
 
-This will generate extensions for `loading`, `loaded`, `error`, `nested`, and `deeplyNested`, allowing you to handle any level of the hierarchy.
+This generates:
+- `loading()`, `loaded()`, `error()`, `nested()` - extensions on `DemoScreenState` (for direct children)
+- `deeplyNested()` - extension on `Nested` (uses immediate parent as receiver)
+
+**Important**: Nested extensions must be called within their parent's scope:
+
+```kotlin
+state {
+    loading { /* ... */ }
+    loaded { /* ... */ }
+    error { /* ... */ }
+    nested {
+        // deeplyNested is only available within nested scope
+        deeplyNested { /* ... */ }
+    }
+}
+```
+
+This provides better type safety and ensures extensions are only available on appropriate receiver types.
 
 ## Usage
 
@@ -109,10 +127,13 @@ fun DemoScreen(
             DemoScreenLoading()
         }
         nested {
-            DemoScreenNested()
-        }
-        deeplyNested {
-            DemoScreenDeeplyNested()
+            deeplyNested {
+                DemoScreenDeeplyNested()
+            }
+            // Show Nested screen if not DeeplyNested
+            if (this !is DemoScreenState.Nested.DeeplyNested) {
+                DemoScreenNested()
+            }
         }
     }
 }
@@ -156,8 +177,9 @@ fun DemoInterfaceScreen(viewModel: DemoInterfaceViewModel) {
         loading { DemoInterfaceScreenLoading() }
         loaded { DemoInterfaceScreenLoaded(data = data) }
         error { DemoInterfaceScreenError(error = error) }
-        nested { DemoInterfaceScreenNested() }
-        deeplyNested { DemoInterfaceScreenDeeplyNested() }
+        nested {
+            deeplyNested { DemoInterfaceScreenDeeplyNested() }
+        }
     }
 }
 ```

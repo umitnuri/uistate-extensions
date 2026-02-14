@@ -127,8 +127,10 @@ class TestStateTest {
         var isExecuted = false
         val state: TestState = TestState.Nested.DeeplyNested
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertTrue(isExecuted)
@@ -219,36 +221,42 @@ class TestStateTest {
     }
 
     @Test
-    fun `Given state is Loading, when executing deeplyNested block, then it does not execute`() {
+    fun `Given state is Loading, when executing nested block with deeplyNested inside, then deeplyNested does not execute`() {
         var isExecuted = false
         val state: TestState = TestState.Loading
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertFalse(isExecuted)
     }
 
     @Test
-    fun `Given state is Error, when executing deeplyNested block, then it does not execute`() {
+    fun `Given state is Error, when executing nested block with deeplyNested inside, then deeplyNested does not execute`() {
         var isExecuted = false
         val state: TestState = TestState.Error(error = "ERROR")
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertFalse(isExecuted)
     }
 
     @Test
-    fun `Given state is Success, when executing deeplyNested block, then it does not execute`() {
+    fun `Given state is Success, when executing nested block with deeplyNested inside, then deeplyNested does not execute`() {
         var isExecuted = false
         val state: TestState = TestState.Success(data = "DATA")
         state {
-            deeplyNested {
-                isExecuted = true
+            nested {
+                deeplyNested {
+                    isExecuted = true
+                }
             }
         }
         assertFalse(isExecuted)
@@ -339,9 +347,9 @@ class TestStateTest {
             }
             nested {
                 nestedExecuted = true
-            }
-            deeplyNested {
-                deeplyNestedExecuted = true
+                deeplyNested {
+                    deeplyNestedExecuted = true
+                }
             }
         }
 
@@ -373,7 +381,7 @@ class TestStateTest {
 
     @Test
     fun `Given state is DeeplyNested, when calling deeplyNested extension, then returns the same state instance`() {
-        val state: TestState = TestState.Nested.DeeplyNested
+        val state: TestState.Nested = TestState.Nested.DeeplyNested
         val result = state.deeplyNested { }
         assertEquals(state, result)
     }
