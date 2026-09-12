@@ -10,7 +10,7 @@ lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.13.0"
 composeBom = "2026.06.00"
 jetbrainsKotlinJvm = "2.3.21"
-kspVersion = "2.3.6"
+kspVersion = "2.3.11"
 mavenPublish = "0.37.0"
 
 [libraries]
