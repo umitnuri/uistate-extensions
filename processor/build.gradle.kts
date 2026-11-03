@@ -13,7 +13,6 @@ java {
 }
 
 kotlin {
-    version = libs.versions.kotlin
     compilerOptions {
         jvmTarget = JvmTarget.JVM_21
     }
@@ -49,7 +48,7 @@ mavenPublishing {
     coordinates(
         groupId = "biz.aydin.library.uistate-extension",
         artifactId = "processor",
-        version = extra["VERSION"]!!.toString()
+        version = extra["VERSION"]!!.toString(),
     )
 
     pom {

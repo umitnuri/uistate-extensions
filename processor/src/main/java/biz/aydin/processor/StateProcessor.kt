@@ -36,11 +36,11 @@ class StateProcessor(
             it.accept(Visitor(resolver = resolver), Unit)
         }
 
-        val unableToProcess = sealedTypesAnnotatedWithUIState.filterNot { it.validate() }.toList()
+        val unableToProcess = sealedTypesAnnotatedWithUIState.filterNot { it.validate(enableNewFeatures = true) }.toList()
         return unableToProcess
     }
 
-    inner class Visitor(private val resolver: Resolver) : KSVisitorVoid() {
+    inner class Visitor(private val resolver: Resolver) : KSVisitorVoid(enableNewFeatures = true) {
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             if (classDeclaration.isNotSealed()) logger.error(
                 "UIState annotation only works for Sealed types.",

@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "biz.aydin.uistate"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "biz.aydin.uistate"
@@ -24,7 +24,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -35,10 +35,11 @@ android {
     buildFeatures {
         compose = true
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-        }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
