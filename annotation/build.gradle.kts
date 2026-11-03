@@ -41,7 +41,7 @@ mavenPublishing {
     coordinates(
         groupId = "biz.aydin.library.uistate-extension",
         artifactId = "annotation",
-        version = extra["VERSION"]!!.toString()
+        version = extra["VERSION"]!!.toString(),
     )
 
     pom {
