@@ -43,5 +43,6 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KOVER_PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           python3 .github/scripts/kover_pr_comment.py

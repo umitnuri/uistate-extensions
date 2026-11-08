@@ -34,6 +34,20 @@ def counters_of(element):
     return {c.get("type"): c for c in element.findall("counter")}
 
 
+def pr_number_from_payload():
+    """Read the PR number from the webhook payload file as a fallback."""
+    import json
+
+    payload = os.environ.get("GITHUB_EVENT_PATH")
+    if not payload:
+        return None
+    try:
+        with open(payload, encoding="utf-8") as fh:
+            return str(json.load(fh).get("number", "") or "")
+    except (OSError, ValueError):
+        return None
+
+
 def build_body(xml_path):
     path = Path(xml_path)
     if not path.exists():
@@ -83,9 +97,15 @@ def main():
         return
 
     repo = os.environ["GITHUB_REPOSITORY"]
-    pr = os.environ.get("GITHUB_EVENT_PULL_REQUEST_NUMBER")
+    pr = (
+        os.environ.get("KOVER_PR_NUMBER")
+        or os.environ.get("GITHUB_EVENT_PULL_REQUEST_NUMBER")
+        or pr_number_from_payload()
+    )
     if not pr:
-        pr = run(["gh", "pr", "view", "--json", "number", "-q", ".number"]).stdout.strip()
+        print("Could not determine PR number; printing comment body only.\n")
+        print(body)
+        return
 
     find = run(
         [
