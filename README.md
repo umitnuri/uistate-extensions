@@ -1,27 +1,73 @@
 # UIState Extensions
 
+![Version](https://img.shields.io/badge/version-1.3.6-blue)
+![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)
 [![PR Check](https://github.com/umitnuri/uistate-extensions/actions/workflows/pr-check.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/pr-check.yml)
 [![Build Test](https://github.com/umitnuri/uistate-extensions/actions/workflows/build.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/build.yml)
 [![Publish package to GitHub Packages & Maven Central](https://github.com/umitnuri/uistate-extensions/actions/workflows/release.yml/badge.svg)](https://github.com/umitnuri/uistate-extensions/actions/workflows/release.yml)
 
-> **📝 See [CHANGELOG.md](CHANGELOG.md) for detailed release notes and change history.**
+A Kotlin Symbol Processing (KSP) library that turns `@UIState`-annotated sealed classes and interfaces into a type-safe DSL for Jetpack Compose. Instead of hand-written `when` blocks, each state becomes a generated inline extension function that executes only when the current state matches.
 
-# Motivation
-My colleague astutely observed that effectively utilising state extensions requires a streamlined enforcement mechanism. Recognizing the validity of this point, I developed this library to simplify the process for other developers. By minimizing boilerplate code, this library aims to enhance developer productivity and reduce the potential for errors.
-# Getting Started
-Here is the blog post where I discuss the pattern [umit.aydin.biz](https://umit.aydin.biz/yet-another-pattern-to-handle-ui-state-in-jetpack-compose)
-This library exclusively supports sealed classes and interfaces. To incorporate the library into your project, follow these steps to include the necessary project dependencies.
+> See [CHANGELOG.md](CHANGELOG.md) for release notes and change history.
+
+## Table of Contents
+
+- [Why](#why)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Nested sealed hierarchies](#nested-sealed-hierarchies)
+- [Sealed interface support](#sealed-interface-support)
+- [How it works](#how-it-works)
+- [Resources](#resources)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Why
+
+Rendering UI state in Compose typically means long `when` expressions over sealed types: repetitive at every call site, easy to leave a branch unhandled, and impossible to extend with shared behaviour. UIState Extensions removes that boilerplate by generating one type-safe extension per state at compile time, so state handling becomes declarative, chainable, and hard to get wrong.
+
+## Features
+
+- `@UIState` annotation for sealed classes and sealed interfaces
+- Generated `invoke` operator plus inline, chainable extension functions (`loading { }`, `loaded { }`, `error { }`, ...)
+- Each extension executes only when the current state matches and returns the same state instance, so blocks can be chained in a single call
+- Deep nesting support: extensions are generated recursively for hierarchies such as `Parent.Child.Grandchild`
+- Nested extensions take their *immediate parent* as receiver for compile-time type safety
+- Works with data objects, data classes, and regular classes
+- Strict scoping: extensions are generated in a dedicated `{state}.extensions` subpackage
+
+## Requirements
+
+| Component | Version |
+|---|---|
+| JDK / Kotlin JVM target | 21 |
+| KSP | 2.3.12 (paired with Kotlin 2.4.x; this library is built against Kotlin 2.4.21) |
+| Android SDK | Demo app targets `compileSdk = 37`, `minSdk = 30` |
+| UI layer | Jetpack Compose (any recent version; demo uses Compose BOM 2026.09.00) |
+
+## Installation
+
+Add the KSP plugin and the two artifacts (annotation + processor):
+
 ```kotlin
 plugins {
     id("com.google.devtools.ksp")
 }
 
 dependencies {
-    implementation("biz.aydin.library.uistate-extension:annotation:1.0.0")
-    ksp("biz.aydin.library.uistate-extension:processor:1.0.0")
+    implementation("biz.aydin.library.uistate-extension:annotation:1.3.6")
+    ksp("biz.aydin.library.uistate-extension:processor:1.3.6")
 }
 ```
-Annotate sealed classes or interfaces that represent UI states with the @UIState annotation.
+
+Artifacts are published to Maven Central and, as a mirror, to GitHub Packages (`https://maven.pkg.github.com/umitnuri/uistate-extensions`).
+
+## Usage
+
+Annotate a sealed class (or interface) that represents your UI state:
+
 ```kotlin
 package biz.aydin.uistate.demoScreen
 
@@ -34,32 +80,42 @@ sealed class DemoScreenState {
     class Error(val error: String) : DemoScreenState()
 }
 ```
-By annotating the DemoScreenState class with @UIState, the following extension functions will be generated.
+
+Then handle state in a Composable with the generated DSL. Custom extensions are generated in a subpackage ending with `.extensions`, which must be imported explicitly to enforce the pattern:
+
 ```kotlin
-inline operator fun biz.aydin.uistate.demoScreen.DemoScreenState.invoke(body: biz.aydin.uistate.demoScreen.DemoScreenState.() -> Unit) {
-	body()
-}
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-inline fun biz.aydin.uistate.demoScreen.DemoScreenState.error(body: biz.aydin.uistate.demoScreen.DemoScreenState.Error.() -> Unit): biz.aydin.uistate.demoScreen.DemoScreenState {
-	if(this is biz.aydin.uistate.demoScreen.DemoScreenState.Error) body()
-	return this
-}
+// Import the generated extensions
+import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.error
+import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.invoke
+import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.loaded
+import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.loading
 
-inline fun biz.aydin.uistate.demoScreen.DemoScreenState.loaded(body: biz.aydin.uistate.demoScreen.DemoScreenState.Loaded.() -> Unit): biz.aydin.uistate.demoScreen.DemoScreenState {
-	if(this is biz.aydin.uistate.demoScreen.DemoScreenState.Loaded) body()
-	return this
+@Composable
+fun DemoScreen(viewModel: DemoViewModel) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    state {
+        error {
+            DemoScreenError(error = error)
+        }
+        loaded {
+            DemoScreenLoaded(data = data)
+        }
+        loading {
+            DemoScreenLoading()
+        }
+    }
 }
-
-inline fun biz.aydin.uistate.demoScreen.DemoScreenState.loading(body: biz.aydin.uistate.demoScreen.DemoScreenState.Loading.() -> Unit): biz.aydin.uistate.demoScreen.DemoScreenState {
-	if(this is biz.aydin.uistate.demoScreen.DemoScreenState.Loading) body()
-	return this
-}
-
 ```
 
-## Nested Sealed Hierarchies
+Only the blocks whose state matches the current instance execute, and each block exposes the state's own properties as receivers (`error`, `data`, ...).
 
-The library supports nested sealed classes and interfaces. Extensions are generated for all levels of the hierarchy, with each extension using its **immediate parent** as the receiver type:
+## Nested sealed hierarchies
+
+The library supports nested sealed classes and interfaces. Extensions are generated for all levels of the hierarchy, and each extension uses its **immediate parent** as the receiver type:
 
 ```kotlin
 @UIState
@@ -75,10 +131,11 @@ sealed class DemoScreenState {
 ```
 
 This generates:
-- `loading()`, `loaded()`, `error()`, `nested()` - extensions on `DemoScreenState` (for direct children)
-- `deeplyNested()` - extension on `Nested` (uses immediate parent as receiver)
 
-**Important**: Nested extensions must be called within their parent's scope:
+- `loading()`, `loaded()`, `error()`, `nested()` — extensions on `DemoScreenState` (direct children)
+- `deeplyNested()` — extension on `Nested` (uses the immediate parent as receiver)
+
+Nested extensions must be called within their parent's scope:
 
 ```kotlin
 state {
@@ -86,60 +143,21 @@ state {
     loaded { /* ... */ }
     error { /* ... */ }
     nested {
-        // deeplyNested is only available within nested scope
-        deeplyNested { /* ... */ }
-    }
-}
-```
-
-This provides better type safety and ensures extensions are only available on appropriate receiver types.
-
-## Usage
-
-**Note that custom extensions are generated in a subpackage ending with `.extensions` to strictly enforce the pattern.**
-
-```kotlin
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
-// Import the generated extensions
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.error
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.invoke
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.loaded
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.loading
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.nested
-import biz.aydin.uistate.demoScreen.demoscreenstate.extensions.deeplyNested
-
-@Composable
-fun DemoScreen(
-    viewModel: DemoViewModel
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    state {
-        error {
-            DemoScreenError(error = error)
+        // deeplyNested is only available within the nested scope
+        deeplyNested {
+            DemoScreenDeeplyNested()
         }
-        loaded {
-            DemoScreenLoaded(data = data)
-        }
-        loading {
-            DemoScreenLoading()
-        }
-        nested {
-            deeplyNested {
-                DemoScreenDeeplyNested()
-            }
-            // Show Nested screen if not DeeplyNested
-            if (this !is DemoScreenState.Nested.DeeplyNested) {
-                DemoScreenNested()
-            }
+        // Show the Nested screen if the state is not DeeplyNested
+        if (this !is DemoScreenState.Nested.DeeplyNested) {
+            DemoScreenNested()
         }
     }
 }
 ```
 
-## Sealed Interface Example
+Because child states are `is`-instances of their parent types, a parent extension also executes for child states, while child extensions require an exact match. This provides compile-time type safety: extensions are only available on compatible receiver types.
+
+## Sealed interface support
 
 The library works identically with sealed interfaces:
 
@@ -160,15 +178,15 @@ sealed interface DemoInterfaceState {
 }
 ```
 
-The same extension functions will be generated, with the only difference being the package name:
+The same extensions are generated; only the package name differs:
 
 ```kotlin
+import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.deeplyNested
 import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.error
 import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.invoke
 import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.loaded
 import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.loading
 import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.nested
-import biz.aydin.uistate.demoInterface.demointerfacestate.extensions.deeplyNested
 
 @Composable
 fun DemoInterfaceScreen(viewModel: DemoInterfaceViewModel) {
@@ -184,5 +202,63 @@ fun DemoInterfaceScreen(viewModel: DemoInterfaceViewModel) {
 }
 ```
 
-# Thank you
-Please feel free to contribute this work via PR or issues.
+## How it works
+
+For every annotated sealed type, the processor generates a `{state}.extensions` package containing:
+
+1. An `inline operator fun invoke(body: State.() -> Unit)` that simply runs the DSL block.
+2. One `inline fun State.subclassName(body: Subclass.() -> Unit): State` per subclass, executing `body` only when `this is Subclass` and returning the same instance for chaining.
+
+Function names are camel-cased from the subclass name (`Loading` → `loading()`, `TwoWords` → `twoWords()`), and nested subclasses are referenced by fully qualified names.
+
+<details>
+<summary>Example of generated code for <code>DemoScreenState</code></summary>
+
+```kotlin
+inline operator fun biz.aydin.uistate.demoScreen.DemoScreenState.invoke(
+    body: biz.aydin.uistate.demoScreen.DemoScreenState.() -> Unit
+) {
+    body()
+}
+
+inline fun biz.aydin.uistate.demoScreen.DemoScreenState.error(
+    body: biz.aydin.uistate.demoScreen.DemoScreenState.Error.() -> Unit
+): biz.aydin.uistate.demoScreen.DemoScreenState {
+    if (this is biz.aydin.uistate.demoScreen.DemoScreenState.Error) body()
+    return this
+}
+
+inline fun biz.aydin.uistate.demoScreen.DemoScreenState.loaded(
+    body: biz.aydin.uistate.demoScreen.DemoScreenState.Loaded.() -> Unit
+): biz.aydin.uistate.demoScreen.DemoScreenState {
+    if (this is biz.aydin.uistate.demoScreen.DemoScreenState.Loaded) body()
+    return this
+}
+
+inline fun biz.aydin.uistate.demoScreen.DemoScreenState.loading(
+    body: biz.aydin.uistate.demoScreen.DemoScreenState.Loading.() -> Unit
+): biz.aydin.uistate.demoScreen.DemoScreenState {
+    if (this is biz.aydin.uistate.demoScreen.DemoScreenState.Loading) body()
+    return this
+}
+```
+
+</details>
+
+## Resources
+
+- Blog post on the pattern: [Yet another pattern to handle UI state in Jetpack Compose](https://umit.aydin.biz/yet-another-pattern-to-handle-ui-state-in-jetpack-compose)
+- The `app/` module contains runnable demos (`DemoViewModel`, `DemoInterfaceViewModel`) and the full test suites referenced in the changelog.
+
+## Contributing
+
+Contributions are welcome via pull requests and issues:
+
+1. Fork the repository and create a feature branch.
+2. Keep changes scoped; add or update tests in `app/src/test/` or `processor/src/test/` where applicable.
+3. Run `./gradlew build` locally and ensure it passes.
+4. Open a pull request against `main` with a clear description.
+
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE).
