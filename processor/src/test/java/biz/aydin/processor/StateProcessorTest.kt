@@ -400,6 +400,20 @@ class StateProcessorTest {
         assertTrue(result.second!!.contains(expectedLevel2))
     }
 
+    @Test
+    fun `Given annotated non-sealed class, when compiling, then an error is logged`() {
+        val result = compileTestFile(
+            fileName = "NotSealedState",
+            content = """
+                $imports
+                @UIState
+                class NotSealedState { }
+            """.trimIndent()
+        )
+        assertEquals(KotlinCompilation.ExitCode.COMPILATION_ERROR, result.first.exitCode)
+        assertTrue(result.first.messages.contains("UIState annotation only works for Sealed types."))
+    }
+
     private fun compileTestFile(
         fileName: String,
         content: String

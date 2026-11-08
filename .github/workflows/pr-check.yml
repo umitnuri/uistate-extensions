@@ -2,6 +2,7 @@ name: PR Check
 
 permissions:
   contents: read
+  pull-requests: write
 
 on:
   pull_request:
@@ -21,3 +22,27 @@ jobs:
       - name: 🏗️ Build, Test
         run: |
           ./gradlew clean build
+      - name: 📏 Verify 100% line coverage
+        run: |
+          ./gradlew koverVerify
+      - name: 🧾 Generate coverage reports
+        if: always()
+        run: |
+          ./gradlew koverXmlReport koverHtmlReport
+      - name: ⬆️ Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kover-coverage-reports
+          path: |
+            build/reports/kover/report.xml
+            build/reports/kover/html
+          retention-days: 14
+          if-no-files-found: warn
+      - name: 💬 Publish coverage comment
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KOVER_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python3 .github/scripts/kover_pr_comment.py
